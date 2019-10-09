@@ -31,16 +31,18 @@ class PhotoLibraryAuthorizer {
         switch status {
         case .notDetermined:
             PHPhotoLibrary.requestAuthorization(handleAuthorization)
-            break
+            
         case .authorized:
             DispatchQueue.main.async {
                 self.completion(nil)
             }
-            break
+            
         case .denied, .restricted:
             DispatchQueue.main.async {
                 self.onDeniedOrRestricted(completion: self.completion)
             }
+            
+        @unknown default:
             break
         }
     }

@@ -19,13 +19,13 @@ public typealias CameraViewMultipleCompletion = ([UIImage?], [PHAsset?]) -> Void
 
 public extension CameraViewController {
     /// Provides an image picker wrapped inside a UINavigationController instance
-    public class func imagePickerViewController(croppingParameters: CroppingParameters, completion: @escaping CameraViewCompletion) -> UINavigationController {
+    class func imagePickerViewController(croppingParameters: CroppingParameters, completion: @escaping CameraViewCompletion) -> UINavigationController {
         let imagePicker = PhotoLibraryViewController()
         let navigationController = UINavigationController(rootViewController: imagePicker)
         
         navigationController.navigationBar.barTintColor = UIColor(red:0.15, green:0.15, blue:0.17, alpha:1.0)
         navigationController.navigationBar.isTranslucent = false
-        navigationController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+        navigationController.modalTransitionStyle = .crossDissolve
         
         imagePicker.onSelectionComplete = { [weak imagePicker] asset in
             if let asset = asset {
@@ -37,20 +37,20 @@ public extension CameraViewController {
                         imagePicker?.dismiss(animated: true, completion: nil)
                     }
                 }
-                confirmController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                confirmController.modalTransitionStyle = .crossDissolve
                 imagePicker?.present(confirmController, animated: true, completion: nil)
             } else {
                 completion(nil, nil)
             }
         }
         
-        
+        navigationController.modalPresentationStyle = .fullScreen
         
         return navigationController
     }
     
     
-    public class func imageMultiplePickerViewController(croppingParameters: CroppingParameters, completion: @escaping CameraViewMultipleCompletion) -> UINavigationController {
+    class func imageMultiplePickerViewController(croppingParameters: CroppingParameters, completion: @escaping CameraViewMultipleCompletion) -> UINavigationController {
         let imagePicker = PhotoLibraryViewController()
         let navigationController = UINavigationController(rootViewController: imagePicker)
         
@@ -113,7 +113,7 @@ open class CameraViewController: UIViewController {
     
     var animationDuration: TimeInterval = 0.5
     var animationSpring: CGFloat = 0.5
-    var rotateAnimation: UIViewAnimationOptions = .curveLinear
+    var rotateAnimation: UIView.AnimationOptions = .curveLinear
     
     var cameraButtonEdgeConstraint: NSLayoutConstraint?
     var cameraButtonGravityConstraint: NSLayoutConstraint?
@@ -236,6 +236,8 @@ open class CameraViewController: UIViewController {
         swapButton.isHidden = !allowsSwapCameraOrientation
         
         self.delegate = delegate
+        
+        modalPresentationStyle = .fullScreen
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -408,7 +410,7 @@ open class CameraViewController: UIViewController {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(rotateCameraView),
-            name: NSNotification.Name.UIDeviceOrientationDidChange,
+            name: UIDevice.orientationDidChangeNotification,
             object: nil)
     }
     
@@ -682,18 +684,21 @@ open class CameraViewController: UIViewController {
             }
             
         }
-        confirmViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+        confirmViewController.modalTransitionStyle = .crossDissolve
+        
+        confirmViewController.modalPresentationStyle = .fullScreen
+        
         present(confirmViewController, animated: true, completion: nil)
     }
     
     private func showSpinner() -> UIActivityIndicatorView {
         let spinner = UIActivityIndicatorView()
-        spinner.activityIndicatorViewStyle = .white
+        spinner.style = .white
         spinner.center = view.center
         spinner.startAnimating()
         
         view.addSubview(spinner)
-        view.bringSubview(toFront: spinner)
+        view.bringSubviewToFront(spinner)
         
         return spinner
     }

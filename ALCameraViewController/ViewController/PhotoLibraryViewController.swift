@@ -51,19 +51,19 @@ public class PhotoLibraryViewController: UIViewController {
         
         setNeedsStatusBarAppearanceUpdate()
         
-        let buttonImage = UIImage(named: "libraryCancel", in: CameraGlobals.shared.bundle, compatibleWith: nil)?.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
+        let buttonImage = UIImage(named: "libraryCancel", in: CameraGlobals.shared.bundle, compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: buttonImage,
-                                                           style: UIBarButtonItemStyle.plain,
+                                                           style: .plain,
                                                            target: self,
                                                            action: #selector(dismissLibrary))
         
         
         
-        buttonImageConfirmLibrarySelection = UIImage(named: "libraryConfirm", in: CameraGlobals.shared.bundle, compatibleWith: nil)?.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
+        buttonImageConfirmLibrarySelection = UIImage(named: "libraryConfirm", in: CameraGlobals.shared.bundle, compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: buttonImageConfirmLibrarySelection,
-                                                            style: UIBarButtonItemStyle.plain,
+                                                            style: .plain,
                                                             target: self,
                                                             action: #selector(saveSelectionInLibrary))
         
@@ -100,6 +100,8 @@ public class PhotoLibraryViewController: UIViewController {
         navigationController.navigationBar.barTintColor = UIColor(red:0.15, green:0.15, blue:0.17, alpha:1.0)
 
         navigationController.navigationBar.isTranslucent = false
+        navigationController.modalPresentationStyle = .fullScreen
+        
         inViewController.present(navigationController, animated: animated, completion: nil)
     }
     
@@ -195,7 +197,7 @@ extension PhotoLibraryViewController : UICollectionViewDelegateFlowLayout {
         if allowMultiple == true {
             if let item = itemAtIndexPath(indexPath) {
                 if selectedAssets.contains(item) {
-                    if let index = selectedAssets.index(of: item) {
+                    if let index = selectedAssets.firstIndex(of: item) {
                         selectedAssets.remove(at: index)
                     }
                     
