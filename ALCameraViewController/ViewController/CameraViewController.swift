@@ -100,6 +100,8 @@ public extension CameraViewController {
 
 open class CameraViewController: UIViewController {
     
+    public var shouldShowConfirmationAfterCapture: Bool = true
+    
     var didUpdateViews = false
     var croppingParameters: CroppingParameters
     var animationRunning = false
@@ -312,13 +314,11 @@ open class CameraViewController: UIViewController {
         
         let padding : CGFloat = portrait ? 16.0 : -16.0
         removeCameraOverlayEdgesConstraints()
-        configCameraOverlayEdgeOneContraint(portrait, padding: padding)
+        configCameraOverlayEdgeOneConstraint(portrait, padding: padding)
         configCameraOverlayEdgeTwoConstraint(portrait, padding: padding)
         configCameraOverlayWidthConstraint(portrait)
         configCameraOverlayCenterConstraint(portrait)
-        
-//        rotate(actualInterfaceOrientation: statusBarOrientation)
-        
+
         super.updateViewConstraints()
     }
     
@@ -382,10 +382,9 @@ open class CameraViewController: UIViewController {
             self?.view.setNeedsUpdateConstraints()
             self?.cameraView.rotatePreview(UIApplication.shared.statusBarOrientation)
             self?.cameraView.frame = self?.view.bounds ?? .zero
-            }, completion: { _ in
-                
-                self.cameraView.frame = self.view.bounds
-//                self.rotate(actualInterfaceOrientation: UIApplication.shared.statusBarOrientation)
+        }, completion: { _ in
+            
+            self.cameraView.frame = self.view.bounds
         })
     }
     
@@ -464,9 +463,11 @@ open class CameraViewController: UIViewController {
      */
     internal func rotate(actualInterfaceOrientation: UIInterfaceOrientation) {
         
-        if lastInterfaceOrientation != nil {
-            let lastTransform = CGAffineTransform(rotationAngle: radians(currentRotation(
-                lastInterfaceOrientation!, newOrientation: actualInterfaceOrientation)))
+        if let l = lastInterfaceOrientation {
+            let r = radians(currentRotation(l, newOrientation: actualInterfaceOrientation))
+            
+            let lastTransform = CGAffineTransform(rotationAngle: r)
+            
             setTransform(transform: lastTransform)
         }
         
@@ -503,7 +504,7 @@ open class CameraViewController: UIViewController {
                     self?.setTransform(transform: transform)
                 }, completion: { [weak self] _ in
                     self?.animationRunning = false
-            })
+                })
             
         }
     }
@@ -561,8 +562,8 @@ open class CameraViewController: UIViewController {
      */
     internal func capturePhoto() {
         guard let output = cameraView.imageOutput,
-            let connection = output.connection(with: AVMediaType.video) else {
-                return
+              let connection = output.connection(with: AVMediaType.video) else {
+            return
         }
         
         if connection.isEnabled {
@@ -656,6 +657,14 @@ open class CameraViewController: UIViewController {
     }
     
     private func startConfirmController(uiImage: UIImage) {
+        
+        if !shouldShowConfirmationAfterCapture {
+            delegate?.saveImageToTask(image: uiImage, showPhotos: false, scanner: false, initialDescription: "")
+            
+            cameraView.startSession()
+            return
+        }
+        
         let confirmViewController = ConfirmViewController(image: uiImage, croppingParameters: croppingParameters)
         confirmViewController.onComplete = { [weak self] image, asset in
             
@@ -672,6 +681,24 @@ open class CameraViewController: UIViewController {
     }
     
     private func startConfirmController(asset: PHAsset) {
+        
+        if !shouldShowConfirmationAfterCapture {
+            _ = SingleImageFetcher()
+                .setAsset(asset)
+                .setTargetSize(largestPhotoSize())
+                .onSuccess { [weak self] image in
+                    self?.delegate?.saveImageToTask(image: image, showPhotos: false, scanner: false, initialDescription: "")
+                    
+                    self?.cameraView.startSession()
+                }
+                .onFailure { error in
+                    print(error)
+                }
+                .fetch()
+            
+            return
+        }
+        
         let confirmViewController = ConfirmViewController(asset: asset, croppingParameters: croppingParameters)
         confirmViewController.onComplete = { [weak self] image, asset in
             

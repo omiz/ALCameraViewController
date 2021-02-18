@@ -493,7 +493,7 @@ extension CameraViewController {
      It uses the orientation of the screen to determinate where
      the view will be pinned.
      */
-    func configCameraOverlayEdgeOneContraint(_ portrait: Bool, padding: CGFloat) {
+    func configCameraOverlayEdgeOneConstraint(_ portrait: Bool, padding: CGFloat) {
         let attribute : NSLayoutConstraint.Attribute = portrait ? .left : .bottom
         cameraOverlayEdgeOneConstraint = NSLayoutConstraint(
             item: cameraOverlay,
